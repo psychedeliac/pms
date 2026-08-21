@@ -2,24 +2,57 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { toReservation, type Reservation, type PaymentStatus } from "@/lib/reservations";
+import {
+  toReservation,
+  type Reservation,
+  type CheckInStatus,
+  type IdStatus,
+  type PaymentStatus,
+} from "@/lib/reservations";
 
-export async function checkInGuest(id: string): Promise<{ error: string | null }> {
+async function updateReservation(
+  id: string,
+  patch: Record<string, unknown>
+): Promise<{ error: string | null }> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  const { error } = await supabase
-    .from("reservations")
-    .update({ check_in_status: "checked-in" })
-    .eq("id", id);
-
+  const { error } = await supabase.from("reservations").update(patch).eq("id", id);
   if (error) return { error: error.message };
 
   revalidatePath("/reservations");
   return { error: null };
+}
+
+export async function setCheckInStatus(
+  id: string,
+  status: CheckInStatus
+): Promise<{ error: string | null }> {
+  return updateReservation(id, { check_in_status: status });
+}
+
+export async function assignRoom(
+  id: string,
+  roomNumber: string
+): Promise<{ error: string | null }> {
+  return updateReservation(id, { room_number: roomNumber });
+}
+
+export async function updateIdStatus(
+  id: string,
+  status: IdStatus
+): Promise<{ error: string | null }> {
+  return updateReservation(id, { id_status: status });
+}
+
+export async function updatePaymentStatus(
+  id: string,
+  status: PaymentStatus
+): Promise<{ error: string | null }> {
+  return updateReservation(id, { payment_status: status });
 }
 
 export async function createWalkInBooking(input: {

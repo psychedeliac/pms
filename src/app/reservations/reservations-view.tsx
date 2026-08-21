@@ -5,10 +5,11 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import Sidebar from "@/components/sidebar";
 import WalkInBookingModal from "@/components/walk-in-booking-modal";
+import AssignRoomModal from "@/components/assign-room-modal";
 import type { Profile } from "@/lib/profile";
 import { getInitials } from "@/lib/profile";
-import type { Reservation } from "@/lib/reservations";
-import { checkInGuest } from "./actions";
+import type { IdStatus, PaymentStatus, Reservation } from "@/lib/reservations";
+import { setCheckInStatus, updateIdStatus, updatePaymentStatus } from "./actions";
 
 const TABS = [
   { key: "check-in", label: "Check-In", icon: "/reservations/icons/tab-checkin.svg" },
@@ -36,24 +37,79 @@ function isToday(iso: string): boolean {
   return new Date(iso).toDateString() === new Date().toDateString();
 }
 
-function Badge({
-  icon,
-  label,
-  color,
-  bg,
-}: {
-  icon: string;
+type StatusOption<T extends string> = {
+  value: T;
   label: string;
   color: string;
   bg: string;
+  icon: string;
+};
+
+const ID_STATUS_OPTIONS: StatusOption<IdStatus>[] = [
+  {
+    value: "verified",
+    label: "Verified",
+    color: "#10b981",
+    bg: "rgba(16,185,129,0.2)",
+    icon: "/reservations/icons/badge-verified.svg",
+  },
+  {
+    value: "pending",
+    label: "Pending",
+    color: "#facc15",
+    bg: "rgba(234,179,8,0.2)",
+    icon: "/reservations/icons/badge-pending-id.svg",
+  },
+];
+
+const PAYMENT_STATUS_OPTIONS: StatusOption<PaymentStatus>[] = [
+  {
+    value: "paid",
+    label: "Paid",
+    color: "#10b981",
+    bg: "rgba(16,185,129,0.2)",
+    icon: "/reservations/icons/badge-check.svg",
+  },
+  {
+    value: "pending",
+    label: "Pending",
+    color: "#f87171",
+    bg: "rgba(239,68,68,0.2)",
+    icon: "/reservations/icons/badge-pending-payment.svg",
+  },
+];
+
+function StatusDropdown<T extends string>({
+  value,
+  options,
+  disabled,
+  onChange,
+}: {
+  value: T;
+  options: StatusOption<T>[];
+  disabled: boolean;
+  onChange: (value: T) => void;
 }) {
+  const current = options.find((o) => o.value === value) ?? options[0];
   return (
     <span
       className="inline-flex items-center gap-1 rounded px-2 py-[3.5px] text-xs"
-      style={{ backgroundColor: bg, color }}
+      style={{ backgroundColor: current.bg, color: current.color }}
     >
-      <Image src={icon} alt="" width={12} height={12} />
-      {label}
+      <Image src={current.icon} alt="" width={12} height={12} />
+      <select
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value as T)}
+        className="cursor-pointer appearance-none bg-transparent pr-1 text-xs outline-none disabled:cursor-not-allowed"
+        style={{ color: current.color }}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value} className="bg-[#1a1a1a] text-white">
+            {option.label}
+          </option>
+        ))}
+      </select>
     </span>
   );
 }
@@ -82,7 +138,9 @@ export default function ReservationsView({
   const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
   const [activeTab, setActiveTab] = useState<TabKey>("check-in");
   const [walkInOpen, setWalkInOpen] = useState(false);
-  const [checkInError, setCheckInError] = useState<string | null>(null);
+  const [assigningReservation, setAssigningReservation] = useState<Reservation | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
   const statCards = useMemo(() => {
     const arrivalsToday = reservations.filter((r) => isToday(r.arrivalAt));
@@ -123,17 +181,54 @@ export default function ReservationsView({
     ];
   }, [reservations]);
 
-  async function handleCheckIn(id: string) {
-    setCheckInError(null);
+  async function handleCheckInStatusChange(id: string, status: Reservation["checkInStatus"]) {
+    setActionError(null);
     const previous = reservations;
     setReservations((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, checkInStatus: "checked-in" as const } : r))
+      prev.map((r) => (r.id === id ? { ...r, checkInStatus: status } : r))
     );
 
-    const { error } = await checkInGuest(id);
+    const { error } = await setCheckInStatus(id, status);
     if (error) {
       setReservations(previous);
-      setCheckInError(error);
+      setActionError(error);
+    }
+  }
+
+  function handleRoomAssigned(id: string, roomNumber: string) {
+    setReservations((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, roomNumber } : r))
+    );
+    setAssigningReservation(null);
+  }
+
+  async function handleIdStatusChange(id: string, status: IdStatus) {
+    setActionError(null);
+    setPendingId(id);
+    const previous = reservations;
+    setReservations((prev) => prev.map((r) => (r.id === id ? { ...r, idStatus: status } : r)));
+
+    const { error } = await updateIdStatus(id, status);
+    setPendingId(null);
+    if (error) {
+      setReservations(previous);
+      setActionError(error);
+    }
+  }
+
+  async function handlePaymentStatusChange(id: string, status: PaymentStatus) {
+    setActionError(null);
+    setPendingId(id);
+    const previous = reservations;
+    setReservations((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, paymentStatus: status } : r))
+    );
+
+    const { error } = await updatePaymentStatus(id, status);
+    setPendingId(null);
+    if (error) {
+      setReservations(previous);
+      setActionError(error);
     }
   }
 
@@ -329,8 +424,8 @@ export default function ReservationsView({
                 </div>
               </div>
 
-              {checkInError && (
-                <p className="text-xs font-light text-[#f87171]">{checkInError}</p>
+              {actionError && (
+                <p className="text-xs font-light text-[#f87171]">{actionError}</p>
               )}
 
               <div className="w-full overflow-auto">
@@ -403,42 +498,38 @@ export default function ReservationsView({
                             {reservation.nights} nights
                           </td>
                           <td className="py-4">
-                            {reservation.idStatus === "verified" ? (
-                              <Badge
-                                icon="/reservations/icons/badge-verified.svg"
-                                label="Verified"
-                                color="#10b981"
-                                bg="rgba(16,185,129,0.2)"
-                              />
-                            ) : (
-                              <Badge
-                                icon="/reservations/icons/badge-pending-id.svg"
-                                label="Pending"
-                                color="#facc15"
-                                bg="rgba(234,179,8,0.2)"
-                              />
-                            )}
+                            <StatusDropdown
+                              value={reservation.idStatus}
+                              options={ID_STATUS_OPTIONS}
+                              disabled={pendingId === reservation.id}
+                              onChange={(status) =>
+                                handleIdStatusChange(reservation.id, status)
+                              }
+                            />
                           </td>
                           <td className="py-4">
-                            {reservation.paymentStatus === "paid" ? (
-                              <Badge
-                                icon="/reservations/icons/badge-check.svg"
-                                label="Paid"
-                                color="#10b981"
-                                bg="rgba(16,185,129,0.2)"
-                              />
-                            ) : (
-                              <Badge
-                                icon="/reservations/icons/badge-pending-payment.svg"
-                                label="Pending"
-                                color="#f87171"
-                                bg="rgba(239,68,68,0.2)"
-                              />
-                            )}
+                            <StatusDropdown
+                              value={reservation.paymentStatus}
+                              options={PAYMENT_STATUS_OPTIONS}
+                              disabled={pendingId === reservation.id}
+                              onChange={(status) =>
+                                handlePaymentStatusChange(reservation.id, status)
+                              }
+                            />
                           </td>
                           <td className="py-4">
                             {isCheckedIn ? (
-                              <span className="flex items-center gap-1 text-xs text-[#10b981]">
+                              <motion.button
+                                type="button"
+                                onClick={() =>
+                                  handleCheckInStatusChange(reservation.id, "pending")
+                                }
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                                className="flex cursor-pointer items-center gap-1 rounded-lg px-3 py-1.5 text-xs text-[#10b981] transition-colors hover:bg-[rgba(16,185,129,0.15)]"
+                                title="Click to revert to pending"
+                              >
                                 <Image
                                   src="/reservations/icons/badge-check.svg"
                                   alt=""
@@ -446,10 +537,11 @@ export default function ReservationsView({
                                   height={12}
                                 />
                                 Checked-In
-                              </span>
+                              </motion.button>
                             ) : reservation.roomNumber === null ? (
                               <motion.button
                                 type="button"
+                                onClick={() => setAssigningReservation(reservation)}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -466,7 +558,9 @@ export default function ReservationsView({
                             ) : (
                               <motion.button
                                 type="button"
-                                onClick={() => handleCheckIn(reservation.id)}
+                                onClick={() =>
+                                  handleCheckInStatusChange(reservation.id, "checked-in")
+                                }
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -511,6 +605,12 @@ export default function ReservationsView({
         open={walkInOpen}
         onClose={() => setWalkInOpen(false)}
         onCreated={handleWalkInCreated}
+      />
+
+      <AssignRoomModal
+        reservation={assigningReservation}
+        onClose={() => setAssigningReservation(null)}
+        onAssigned={handleRoomAssigned}
       />
     </div>
   );
