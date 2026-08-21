@@ -74,14 +74,14 @@ function EditReservationForm({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 8, scale: 0.97 }}
       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-sm rounded-xl border border-white/5 bg-[rgba(26,26,26,0.9)] p-8 backdrop-blur-[10px]"
+      className="w-full max-w-sm rounded-xl border border-border/5 bg-surface p-8 backdrop-blur-[10px]"
       onClick={(e) => e.stopPropagation()}
     >
-      <h2 className="mb-6 text-lg font-medium text-white">Edit Reservation</h2>
+      <h2 className="mb-6 text-lg font-medium text-ink">Edit Reservation</h2>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="editGuestName" className="text-xs font-light text-[#9ca3af]">
+          <label htmlFor="editGuestName" className="text-xs font-light text-muted">
             Guest Name
           </label>
           <input
@@ -90,12 +90,12 @@ function EditReservationForm({
             required
             value={guestName}
             onChange={(e) => setGuestName(e.target.value)}
-            className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#10b981]"
+            className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-ink/30"
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="editRoomType" className="text-xs font-light text-[#9ca3af]">
+          <label htmlFor="editRoomType" className="text-xs font-light text-muted">
             Room Type
           </label>
           <input
@@ -104,12 +104,12 @@ function EditReservationForm({
             required
             value={roomType}
             onChange={(e) => setRoomType(e.target.value)}
-            className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#10b981]"
+            className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-ink/30"
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="editRoomNumber" className="text-xs font-light text-[#9ca3af]">
+          <label htmlFor="editRoomNumber" className="text-xs font-light text-muted">
             Room Number
           </label>
           <input
@@ -117,14 +117,14 @@ function EditReservationForm({
             type="text"
             value={roomNumber}
             onChange={(e) => setRoomNumber(e.target.value)}
-            className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
+            className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/30"
             placeholder="Unassigned"
           />
         </div>
 
         <div className="flex gap-3">
           <div className="flex flex-1 flex-col gap-1.5">
-            <label htmlFor="editArrivalTime" className="text-xs font-light text-[#9ca3af]">
+            <label htmlFor="editArrivalTime" className="text-xs font-light text-muted">
               Arrival Time
             </label>
             <input
@@ -133,12 +133,12 @@ function EditReservationForm({
               required
               value={arrivalTime}
               onChange={(e) => setArrivalTime(e.target.value)}
-              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#10b981]"
+              className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-ink/30"
             />
           </div>
 
           <div className="flex w-24 flex-col gap-1.5">
-            <label htmlFor="editNights" className="text-xs font-light text-[#9ca3af]">
+            <label htmlFor="editNights" className="text-xs font-light text-muted">
               Nights
             </label>
             <input
@@ -148,14 +148,14 @@ function EditReservationForm({
               required
               value={nights}
               onChange={(e) => setNights(Math.max(1, Number(e.target.value)))}
-              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#10b981]"
+              className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-ink/30"
             />
           </div>
         </div>
 
         <div className="flex gap-3">
           <div className="flex flex-1 flex-col gap-1.5">
-            <span className="text-xs font-light text-[#9ca3af]">ID Status</span>
+            <span className="text-xs font-light text-muted">ID Status</span>
             <div className="flex gap-2">
               {(["pending", "verified"] as const).map((status) => (
                 <button
@@ -164,8 +164,8 @@ function EditReservationForm({
                   onClick={() => setIdStatus(status)}
                   className={`flex-1 cursor-pointer rounded-lg border px-3 py-2 text-xs capitalize transition-colors ${
                     idStatus === status
-                      ? "border-[rgba(16,185,129,0.4)] bg-[rgba(16,185,129,0.15)] text-[#10b981]"
-                      : "border-white/5 bg-[rgba(26,26,26,0.6)] text-[#9ca3af] hover:text-white"
+                      ? "border-ink bg-ink text-background"
+                      : "border-border/5 bg-surface text-muted hover:text-ink"
                   }`}
                 >
                   {status}
@@ -175,7 +175,7 @@ function EditReservationForm({
           </div>
 
           <div className="flex flex-1 flex-col gap-1.5">
-            <span className="text-xs font-light text-[#9ca3af]">Payment</span>
+            <span className="text-xs font-light text-muted">Payment</span>
             <div className="flex gap-2">
               {(["pending", "paid"] as const).map((status) => (
                 <button
@@ -184,8 +184,8 @@ function EditReservationForm({
                   onClick={() => setPaymentStatus(status)}
                   className={`flex-1 cursor-pointer rounded-lg border px-3 py-2 text-xs capitalize transition-colors ${
                     paymentStatus === status
-                      ? "border-[rgba(16,185,129,0.4)] bg-[rgba(16,185,129,0.15)] text-[#10b981]"
-                      : "border-white/5 bg-[rgba(26,26,26,0.6)] text-[#9ca3af] hover:text-white"
+                      ? "border-ink bg-ink text-background"
+                      : "border-border/5 bg-surface text-muted hover:text-ink"
                   }`}
                 >
                   {status}
@@ -195,33 +195,37 @@ function EditReservationForm({
           </div>
         </div>
 
-        <label className="flex cursor-pointer items-center gap-2 text-xs font-light text-[#9ca3af]">
+        <label className="flex cursor-pointer items-center gap-2 text-xs font-light text-muted">
           <input
             type="checkbox"
             checked={isVip}
             onChange={(e) => setIsVip(e.target.checked)}
-            className="size-3.5 cursor-pointer accent-[#10b981]"
+            className="size-3.5 cursor-pointer accent-ink"
           />
           VIP Guest
         </label>
 
-        {error && <p className="text-xs font-light text-[#f87171]">{error}</p>}
+        {error && (
+          <p className="rounded-lg border border-border/20 px-3 py-2 text-xs font-normal text-ink">
+            {error}
+          </p>
+        )}
 
         <div className="mt-2 flex gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 cursor-pointer rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] py-2.5 text-sm text-[#9ca3af] transition-colors hover:text-white"
+            className="flex-1 cursor-pointer rounded-lg border border-border/5 bg-surface py-2.5 text-sm text-muted transition-colors hover:text-ink"
           >
             Cancel
           </button>
           <motion.button
             type="submit"
             disabled={pending}
-            whileHover={{ scale: 1.015 }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            className="flex-1 cursor-pointer rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] py-2.5 text-sm font-normal text-white shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)] disabled:cursor-not-allowed disabled:opacity-60"
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            className="flex-1 cursor-pointer rounded-lg bg-ink py-2.5 text-sm font-normal text-background shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.15),0px_4px_6px_-4px_rgba(0,0,0,0.15)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? "Saving..." : "Save"}
           </motion.button>

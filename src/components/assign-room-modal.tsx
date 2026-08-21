@@ -58,17 +58,17 @@ export default function AssignRoomModal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.97 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-sm rounded-xl border border-white/5 bg-[rgba(26,26,26,0.9)] p-8 backdrop-blur-[10px]"
+            className="w-full max-w-sm rounded-xl border border-border/5 bg-surface p-8 backdrop-blur-[10px]"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mb-1 text-lg font-medium text-white">Assign Room</h2>
-            <p className="mb-6 text-xs font-light text-[#9ca3af]">
+            <h2 className="mb-1 text-lg font-medium text-ink">Assign Room</h2>
+            <p className="mb-6 text-xs font-light text-muted">
               {reservation.guestName} • {reservation.roomType}
             </p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="assignRoomNumber" className="text-xs font-light text-[#9ca3af]">
+                <label htmlFor="assignRoomNumber" className="text-xs font-light text-muted">
                   Room Number
                 </label>
                 <input
@@ -78,28 +78,32 @@ export default function AssignRoomModal({
                   autoFocus
                   value={roomNumber}
                   onChange={(e) => setRoomNumber(e.target.value)}
-                  className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
+                  className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/30"
                   placeholder="e.g. 214"
                 />
               </div>
 
-              {error && <p className="text-xs font-light text-[#f87171]">{error}</p>}
+              {error && (
+                <p className="rounded-lg border border-border/20 px-3 py-2 text-xs font-normal text-ink">
+                  {error}
+                </p>
+              )}
 
               <div className="mt-2 flex gap-3">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="flex-1 cursor-pointer rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] py-2.5 text-sm text-[#9ca3af] transition-colors hover:text-white"
+                  className="flex-1 cursor-pointer rounded-lg border border-border/5 bg-surface py-2.5 text-sm text-muted transition-colors hover:text-ink"
                 >
                   Cancel
                 </button>
                 <motion.button
                   type="submit"
                   disabled={pending}
-                  whileHover={{ scale: 1.015 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  className="flex-1 cursor-pointer rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] py-2.5 text-sm font-normal text-white shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)] disabled:cursor-not-allowed disabled:opacity-60"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  className="flex-1 cursor-pointer rounded-lg bg-ink py-2.5 text-sm font-normal text-background shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.15),0px_4px_6px_-4px_rgba(0,0,0,0.15)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {pending ? "Assigning..." : "Assign"}
                 </motion.button>

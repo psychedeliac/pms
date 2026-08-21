@@ -32,18 +32,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className="flex min-h-screen flex-1 items-center justify-center p-6"
-      style={{
-        backgroundImage:
-          "linear-gradient(135deg, rgb(10, 10, 10) 0%, rgb(13, 13, 13) 100%)",
-      }}
-    >
+    <div className="flex min-h-screen flex-1 items-center justify-center bg-page-gradient p-6">
       <motion.div
         initial={{ opacity: 0, y: 16, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-sm rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-8 backdrop-blur-[10px]"
+        className="w-full max-w-sm rounded-xl border border-border/5 bg-surface p-8 backdrop-blur-[10px]"
       >
         <motion.div
           initial={{ opacity: 0, y: -8 }}
@@ -51,25 +45,20 @@ export default function LoginPage() {
           transition={{ delay: 0.1, duration: 0.4 }}
           className="mb-8 flex flex-col items-center gap-3"
         >
-          <div
-            className="flex size-11 items-center justify-center rounded-lg shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)]"
-            style={{
-              backgroundImage:
-                "linear-gradient(135deg, rgb(16, 185, 129) 0%, rgb(5, 150, 105) 100%)",
-            }}
-          >
+          <div className="flex size-11 items-center justify-center rounded-lg bg-ink shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.15),0px_4px_6px_-4px_rgba(0,0,0,0.15)]">
             <Image
               src="/reservations/icons/logo-mark.svg"
               alt=""
               width={18}
               height={18}
+              className="invert-0 dark:invert"
             />
           </div>
           <div className="text-center">
-            <p className="text-lg font-medium leading-7 tracking-[-0.45px] text-[#f9fafb]">
+            <p className="text-lg font-medium leading-7 tracking-[-0.45px] text-ink">
               concierge
             </p>
-            <p className="text-[9px] font-light uppercase leading-[13.5px] tracking-[0.45px] text-[#9ca3af]">
+            <p className="text-[9px] font-light uppercase leading-[13.5px] tracking-[0.45px] text-muted">
               Hotel Management
             </p>
           </div>
@@ -83,7 +72,7 @@ export default function LoginPage() {
           transition={{ delay: 0.18, duration: 0.4 }}
         >
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-xs font-light text-[#9ca3af]">
+            <label htmlFor="email" className="text-xs font-light text-muted">
               Email
             </label>
             <input
@@ -92,13 +81,13 @@ export default function LoginPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
+              className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/30"
               placeholder="you@hotel.com"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-xs font-light text-[#9ca3af]">
+            <label htmlFor="password" className="text-xs font-light text-muted">
               Password
             </label>
             <input
@@ -107,13 +96,15 @@ export default function LoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
+              className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/30"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <p className="text-xs font-light text-[#f87171]">{error}</p>
+            <p className="rounded-lg border border-border/20 px-3 py-2 text-xs font-normal text-ink">
+              {error}
+            </p>
           )}
 
           <motion.button
@@ -122,15 +113,15 @@ export default function LoginPage() {
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            className="mt-2 cursor-pointer rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] py-2.5 text-sm font-normal text-white shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-2 cursor-pointer rounded-lg bg-ink py-2.5 text-sm font-normal text-background shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.15),0px_4px_6px_-4px_rgba(0,0,0,0.15)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? "Signing in..." : "Sign In"}
           </motion.button>
         </motion.form>
 
-        <p className="mt-6 text-center text-[11px] font-light text-[#9ca3af]">
+        <p className="mt-6 text-center text-[11px] font-light text-muted">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-[#10b981] hover:underline">
+          <Link href="/signup" className="text-ink hover:underline">
             Sign up
           </Link>
         </p>
