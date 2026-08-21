@@ -1,0 +1,426 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import RequireAuth from "@/components/require-auth";
+import Sidebar from "@/components/sidebar";
+import type { Session } from "@/lib/auth";
+import {
+  checkInGuest,
+  getReservations,
+  type Reservation,
+} from "@/lib/reservations";
+
+const TABS = [
+  { key: "check-in", label: "Check-In", icon: "/reservations/icons/tab-checkin.svg" },
+  { key: "check-out", label: "Check-Out", icon: "/reservations/icons/tab-checkout.svg" },
+  {
+    key: "room-assignment",
+    label: "Room Assignment",
+    icon: "/reservations/icons/tab-room-assignment.svg",
+  },
+  {
+    key: "guest-profiles",
+    label: "Guest Profiles",
+    icon: "/reservations/icons/tab-guest-profiles.svg",
+  },
+  {
+    key: "room-status",
+    label: "Room Status",
+    icon: "/reservations/icons/tab-room-status.svg",
+  },
+] as const;
+
+type TabKey = (typeof TABS)[number]["key"];
+
+const STAT_CARDS = [
+  {
+    icon: "/reservations/icons/stat-arrivals.svg",
+    tint: "rgba(16,185,129,0.1)",
+    value: "15",
+    label: "Today's Arrivals",
+    hint: "3 already checked-in",
+  },
+  {
+    icon: "/reservations/icons/stat-early-checkin.svg",
+    tint: "rgba(234,179,8,0.1)",
+    value: "8",
+    label: "Early Check-In",
+    hint: "Before 2:00 PM",
+  },
+  {
+    icon: "/reservations/icons/stat-id-pending.svg",
+    tint: "rgba(168,85,247,0.1)",
+    value: "5",
+    label: "ID Pending",
+    hint: "Verification required",
+  },
+  {
+    icon: "/reservations/icons/stat-vip.svg",
+    tint: "rgba(59,130,246,0.1)",
+    value: "2",
+    label: "VIP Guests",
+    hint: "Priority check-in",
+  },
+];
+
+function Badge({
+  icon,
+  label,
+  color,
+  bg,
+}: {
+  icon: string;
+  label: string;
+  color: string;
+  bg: string;
+}) {
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded px-2 py-[3.5px] text-xs"
+      style={{ backgroundColor: bg, color }}
+    >
+      <Image src={icon} alt="" width={12} height={12} />
+      {label}
+    </span>
+  );
+}
+
+function ReservationsView({ session }: { session: Session }) {
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [activeTab, setActiveTab] = useState<TabKey>("check-in");
+
+  useEffect(() => {
+    // localStorage is unavailable during SSR, so this must run post-mount to
+    // avoid a hydration mismatch — not a candidate for a derived/lazy value.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReservations(getReservations());
+  }, []);
+
+  function handleCheckIn(id: string) {
+    setReservations(checkInGuest(id));
+  }
+
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  return (
+    <div
+      className="flex min-h-screen w-full"
+      style={{
+        backgroundImage:
+          "linear-gradient(135deg, rgb(10, 10, 10) 0%, rgb(13, 13, 13) 100%)",
+      }}
+    >
+      <Sidebar session={session} />
+
+      <main className="flex w-full flex-1 flex-col gap-6 overflow-auto p-6">
+        <header className="flex w-full items-center justify-between">
+          <div>
+            <h1 className="text-xl font-medium tracking-[-0.5px] text-white">
+              Reservations
+            </h1>
+            <p className="text-xs font-light text-[#9ca3af]">
+              {today} • Manage guest bookings, arrivals & room assignments
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] px-4 py-2 text-xs text-white shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)]"
+            >
+              <Image
+                src="/reservations/icons/icon-plus.svg"
+                alt=""
+                width={13}
+                height={12}
+              />
+              Walk-in Booking
+            </button>
+
+            <div className="relative">
+              <Image
+                src="/reservations/icons/icon-search.svg"
+                alt=""
+                width={12}
+                height={12}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2"
+              />
+              <input
+                type="text"
+                placeholder="Search guests, rooms..."
+                className="w-64 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] py-2.5 pl-10 pr-4 text-xs text-white outline-none placeholder:text-[#9ca3af] backdrop-blur-[10px]"
+              />
+            </div>
+
+            <button
+              type="button"
+              className="relative flex items-center justify-center rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] p-3 backdrop-blur-[10px]"
+            >
+              <Image
+                src="/reservations/icons/icon-bell.svg"
+                alt="Notifications"
+                width={12}
+                height={14}
+              />
+              <span className="absolute right-1 top-1 size-2 rounded-full bg-[#10b981] shadow-[0px_0px_0px_2px_#1a1a1a]" />
+            </button>
+          </div>
+        </header>
+
+        <nav className="flex w-full items-start border-b border-white/10 pb-px">
+          {TABS.map((tab) => {
+            const isActive = tab.key === activeTab;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-2 border-b-2 px-1 pb-3.5 text-sm first:pl-0 [&:not(:first-child)]:ml-6 ${
+                  isActive
+                    ? "border-[#10b981] text-white"
+                    : "border-transparent font-light text-[#9ca3af]"
+                }`}
+              >
+                <Image src={tab.icon} alt="" width={14} height={14} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {activeTab === "check-in" ? (
+          <div className="flex w-full flex-col gap-6">
+            <div className="flex w-full gap-4">
+              {STAT_CARDS.map((card) => (
+                <div
+                  key={card.label}
+                  className="flex flex-1 flex-col gap-1 rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-[17px] backdrop-blur-[10px]"
+                >
+                  <div className="flex items-start justify-between">
+                    <span
+                      className="flex size-10 items-center justify-center rounded-lg"
+                      style={{ backgroundColor: card.tint }}
+                    >
+                      <Image src={card.icon} alt="" width={16} height={16} />
+                    </span>
+                    <span className="text-2xl font-semibold text-white">
+                      {card.value}
+                    </span>
+                  </div>
+                  <p className="pt-1 text-sm text-white">{card.label}</p>
+                  <p className="text-xs font-light text-[#9ca3af]">{card.hint}</p>
+                </div>
+              ))}
+            </div>
+
+            <section className="flex w-full flex-col gap-4 rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-[21px] backdrop-blur-[10px]">
+              <div className="flex w-full items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/reservations/icons/heading-list.svg"
+                    alt=""
+                    width={20}
+                    height={16}
+                  />
+                  <h2 className="text-base font-medium text-white">
+                    Guest Arrivals Today
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-3.5 py-1.5 text-xs text-[#9ca3af] backdrop-blur-[10px]"
+                  >
+                    <Image
+                      src="/reservations/icons/icon-filter.svg"
+                      alt=""
+                      width={12}
+                      height={12}
+                    />
+                    Filter
+                  </button>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-3.5 py-1.5 text-xs text-[#9ca3af] backdrop-blur-[10px]"
+                  >
+                    <Image
+                      src="/reservations/icons/icon-export.svg"
+                      alt=""
+                      width={12}
+                      height={12}
+                    />
+                    Export
+                  </button>
+                </div>
+              </div>
+
+              <div className="w-full overflow-auto">
+                <table className="w-full min-w-[900px] border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      {[
+                        "Guest Name",
+                        "Room Type",
+                        "Arrival Time",
+                        "Nights",
+                        "ID Status",
+                        "Payment",
+                        "Actions",
+                      ].map((heading) => (
+                        <th
+                          key={heading}
+                          className="pb-3 text-left text-xs font-light uppercase text-[#9ca3af]"
+                        >
+                          {heading}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reservations.map((reservation) => {
+                      const isCheckedIn = reservation.checkInStatus === "checked-in";
+                      return (
+                        <tr
+                          key={reservation.id}
+                          className={`border-b border-white/5 ${
+                            isCheckedIn ? "bg-[rgba(20,83,45,0.1)]" : ""
+                          }`}
+                        >
+                          <td className="py-4">
+                            <div className="flex items-center gap-3">
+                              <span className="block size-8 shrink-0 overflow-hidden rounded-full">
+                                <Image
+                                  src={reservation.avatar}
+                                  alt=""
+                                  width={32}
+                                  height={32}
+                                  className="size-full object-cover"
+                                />
+                              </span>
+                              <div>
+                                <p className="text-sm text-white">
+                                  {reservation.guestName}
+                                </p>
+                                <p className="text-xs text-[#9ca3af]">
+                                  Booking {reservation.bookingNumber}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 text-sm font-light text-[#9ca3af]">
+                            {reservation.roomType}
+                            {reservation.roomNumber
+                              ? ` - ${reservation.roomNumber}`
+                              : " - Unassigned"}
+                          </td>
+                          <td className="py-4 text-sm font-light text-[#9ca3af]">
+                            {reservation.arrivalTime}
+                          </td>
+                          <td className="py-4 text-sm font-light text-[#9ca3af]">
+                            {reservation.nights} nights
+                          </td>
+                          <td className="py-4">
+                            {reservation.idStatus === "verified" ? (
+                              <Badge
+                                icon="/reservations/icons/badge-verified.svg"
+                                label="Verified"
+                                color="#10b981"
+                                bg="rgba(16,185,129,0.2)"
+                              />
+                            ) : (
+                              <Badge
+                                icon="/reservations/icons/badge-pending-id.svg"
+                                label="Pending"
+                                color="#facc15"
+                                bg="rgba(234,179,8,0.2)"
+                              />
+                            )}
+                          </td>
+                          <td className="py-4">
+                            {reservation.paymentStatus === "paid" ? (
+                              <Badge
+                                icon="/reservations/icons/badge-check.svg"
+                                label="Paid"
+                                color="#10b981"
+                                bg="rgba(16,185,129,0.2)"
+                              />
+                            ) : (
+                              <Badge
+                                icon="/reservations/icons/badge-pending-payment.svg"
+                                label="Pending"
+                                color="#f87171"
+                                bg="rgba(239,68,68,0.2)"
+                              />
+                            )}
+                          </td>
+                          <td className="py-4">
+                            {isCheckedIn ? (
+                              <span className="flex items-center gap-1 text-xs text-[#10b981]">
+                                <Image
+                                  src="/reservations/icons/badge-check.svg"
+                                  alt=""
+                                  width={12}
+                                  height={12}
+                                />
+                                Checked-In
+                              </span>
+                            ) : reservation.roomNumber === null ? (
+                              <button
+                                type="button"
+                                className="flex items-center gap-1 rounded-lg bg-[rgba(168,85,247,0.2)] px-3 py-1.5 text-xs text-[#c084fc]"
+                              >
+                                <Image
+                                  src="/reservations/icons/action-assign-room.svg"
+                                  alt=""
+                                  width={13.5}
+                                  height={12}
+                                />
+                                Assign Room
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleCheckIn(reservation.id)}
+                                className="flex items-center gap-1 rounded-lg bg-[rgba(16,185,129,0.2)] px-3 py-1.5 text-xs text-[#10b981]"
+                              >
+                                <Image
+                                  src="/reservations/icons/action-checkin.svg"
+                                  alt=""
+                                  width={12}
+                                  height={12}
+                                />
+                                Check-In
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        ) : (
+          <div className="flex w-full flex-1 items-center justify-center rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-12 backdrop-blur-[10px]">
+            <p className="text-sm font-light text-[#9ca3af]">
+              {TABS.find((t) => t.key === activeTab)?.label} view coming soon.
+            </p>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default function ReservationsPage() {
+  return (
+    <RequireAuth>{(session) => <ReservationsView session={session} />}</RequireAuth>
+  );
+}
