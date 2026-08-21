@@ -6,9 +6,10 @@ import { AnimatePresence, motion } from "motion/react";
 import Sidebar from "@/components/sidebar";
 import WalkInBookingModal from "@/components/walk-in-booking-modal";
 import AssignRoomModal from "@/components/assign-room-modal";
+import EditReservationModal from "@/components/edit-reservation-modal";
 import type { Profile } from "@/lib/profile";
 import { getInitials } from "@/lib/profile";
-import type { IdStatus, PaymentStatus, Reservation } from "@/lib/reservations";
+import type { CheckInStatus, IdStatus, PaymentStatus, Reservation } from "@/lib/reservations";
 import { setCheckInStatus, updateIdStatus, updatePaymentStatus } from "./actions";
 
 const TABS = [
@@ -35,6 +36,73 @@ type TabKey = (typeof TABS)[number]["key"];
 
 function isToday(iso: string): boolean {
   return new Date(iso).toDateString() === new Date().toDateString();
+}
+
+type ReservationFilters = {
+  idStatus: IdStatus | "all";
+  paymentStatus: PaymentStatus | "all";
+  checkInStatus: CheckInStatus | "all";
+  vip: "all" | "vip" | "non-vip";
+};
+
+const DEFAULT_FILTERS: ReservationFilters = {
+  idStatus: "all",
+  paymentStatus: "all",
+  checkInStatus: "all",
+  vip: "all",
+};
+
+function matchesFilters(reservation: Reservation, filters: ReservationFilters): boolean {
+  if (filters.idStatus !== "all" && reservation.idStatus !== filters.idStatus) return false;
+  if (filters.paymentStatus !== "all" && reservation.paymentStatus !== filters.paymentStatus)
+    return false;
+  if (filters.checkInStatus !== "all" && reservation.checkInStatus !== filters.checkInStatus)
+    return false;
+  if (filters.vip !== "all" && reservation.isVip !== (filters.vip === "vip")) return false;
+  return true;
+}
+
+const CSV_HEADERS = [
+  "Booking Number",
+  "Guest Name",
+  "Room Type",
+  "Room Number",
+  "Arrival Time",
+  "Nights",
+  "ID Status",
+  "Payment Status",
+  "Check-In Status",
+  "VIP",
+];
+
+function toCsvField(value: string): string {
+  return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+}
+
+function reservationsToCsv(reservations: Reservation[]): string {
+  const rows = reservations.map((r) => [
+    r.bookingNumber,
+    r.guestName,
+    r.roomType,
+    r.roomNumber ?? "Unassigned",
+    r.arrivalTime,
+    String(r.nights),
+    r.idStatus,
+    r.paymentStatus,
+    r.checkInStatus,
+    r.isVip ? "Yes" : "No",
+  ]);
+  return [CSV_HEADERS, ...rows].map((row) => row.map(toCsvField).join(",")).join("\r\n");
+}
+
+function downloadCsv(filename: string, csv: string) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 type StatusOption<T extends string> = {
@@ -114,6 +182,117 @@ function StatusDropdown<T extends string>({
   );
 }
 
+function FilterPanel({
+  filters,
+  onChange,
+  onClear,
+  onClose,
+}: {
+  filters: ReservationFilters;
+  onChange: (filters: ReservationFilters) => void;
+  onClear: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <>
+      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.15 }}
+        className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-white/5 bg-[rgba(26,26,26,0.95)] p-4 backdrop-blur-[10px]"
+      >
+        <div className="flex flex-col gap-3">
+          {(
+            [
+              {
+                key: "idStatus" as const,
+                label: "ID Status",
+                options: [
+                  { value: "all", label: "All" },
+                  { value: "verified", label: "Verified" },
+                  { value: "pending", label: "Pending" },
+                ],
+              },
+              {
+                key: "paymentStatus" as const,
+                label: "Payment",
+                options: [
+                  { value: "all", label: "All" },
+                  { value: "paid", label: "Paid" },
+                  { value: "pending", label: "Pending" },
+                ],
+              },
+              {
+                key: "checkInStatus" as const,
+                label: "Check-In",
+                options: [
+                  { value: "all", label: "All" },
+                  { value: "checked-in", label: "Checked-In" },
+                  { value: "pending", label: "Pending" },
+                ],
+              },
+              {
+                key: "vip" as const,
+                label: "VIP",
+                options: [
+                  { value: "all", label: "All" },
+                  { value: "vip", label: "VIP only" },
+                  { value: "non-vip", label: "Non-VIP" },
+                ],
+              },
+            ] as const
+          ).map((group) => (
+            <div key={group.key} className="flex flex-col gap-1">
+              <label className="text-[10px] font-light uppercase text-[#9ca3af]">
+                {group.label}
+              </label>
+              <select
+                value={filters[group.key]}
+                onChange={(e) => onChange({ ...filters, [group.key]: e.target.value })}
+                className="cursor-pointer rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-2.5 py-1.5 text-xs text-white outline-none focus:border-[#10b981]"
+              >
+                {group.options.map((option) => (
+                  <option key={option.value} value={option.value} className="bg-[#1a1a1a]">
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={onClear}
+            className="cursor-pointer text-left text-xs text-[#9ca3af] transition-colors hover:text-white"
+          >
+            Clear filters
+          </button>
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
+function PencilIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+      <path d="m15 5 4 4" />
+    </svg>
+  );
+}
+
 function AvatarCircle({ name }: { name: string }) {
   return (
     <span
@@ -139,8 +318,20 @@ export default function ReservationsView({
   const [activeTab, setActiveTab] = useState<TabKey>("check-in");
   const [walkInOpen, setWalkInOpen] = useState(false);
   const [assigningReservation, setAssigningReservation] = useState<Reservation | null>(null);
+  const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<ReservationFilters>(DEFAULT_FILTERS);
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  const filteredReservations = useMemo(
+    () => reservations.filter((r) => matchesFilters(r, filters)),
+    [reservations, filters]
+  );
+  const hasActiveFilters = useMemo(
+    () => Object.values(filters).some((value) => value !== "all"),
+    [filters]
+  );
 
   const statCards = useMemo(() => {
     const arrivalsToday = reservations.filter((r) => isToday(r.arrivalAt));
@@ -202,6 +393,17 @@ export default function ReservationsView({
     setAssigningReservation(null);
   }
 
+  function handleReservationSaved(
+    id: string,
+    patch: Pick<
+      Reservation,
+      "guestName" | "roomType" | "roomNumber" | "nights" | "idStatus" | "paymentStatus" | "isVip"
+    >
+  ) {
+    setReservations((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    setEditingReservation(null);
+  }
+
   async function handleIdStatusChange(id: string, status: IdStatus) {
     setActionError(null);
     setPendingId(id);
@@ -234,6 +436,12 @@ export default function ReservationsView({
 
   function handleWalkInCreated(reservation: Reservation) {
     setReservations((prev) => [reservation, ...prev]);
+  }
+
+  function handleExport() {
+    const csv = reservationsToCsv(filteredReservations);
+    const date = new Date().toISOString().slice(0, 10);
+    downloadCsv(`reservations-${date}.csv`, csv);
   }
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -391,23 +599,41 @@ export default function ReservationsView({
                   </h2>
                 </div>
                 <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <motion.button
+                      type="button"
+                      onClick={() => setFilterOpen((open) => !open)}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                      className={`flex cursor-pointer items-center gap-1 rounded-lg border px-3.5 py-1.5 text-xs backdrop-blur-[10px] transition-colors ${
+                        hasActiveFilters
+                          ? "border-[rgba(16,185,129,0.4)] bg-[rgba(16,185,129,0.15)] text-[#10b981]"
+                          : "border-white/5 bg-[rgba(26,26,26,0.6)] text-[#9ca3af] hover:bg-[rgba(26,26,26,0.9)] hover:text-white"
+                      }`}
+                    >
+                      <Image
+                        src="/reservations/icons/icon-filter.svg"
+                        alt=""
+                        width={12}
+                        height={12}
+                      />
+                      Filter
+                    </motion.button>
+                    <AnimatePresence>
+                      {filterOpen && (
+                        <FilterPanel
+                          filters={filters}
+                          onChange={setFilters}
+                          onClear={() => setFilters(DEFAULT_FILTERS)}
+                          onClose={() => setFilterOpen(false)}
+                        />
+                      )}
+                    </AnimatePresence>
+                  </div>
                   <motion.button
                     type="button"
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    className="flex cursor-pointer items-center gap-1 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-3.5 py-1.5 text-xs text-[#9ca3af] backdrop-blur-[10px] transition-colors hover:bg-[rgba(26,26,26,0.9)] hover:text-white"
-                  >
-                    <Image
-                      src="/reservations/icons/icon-filter.svg"
-                      alt=""
-                      width={12}
-                      height={12}
-                    />
-                    Filter
-                  </motion.button>
-                  <motion.button
-                    type="button"
+                    onClick={handleExport}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -451,7 +677,14 @@ export default function ReservationsView({
                     </tr>
                   </thead>
                   <tbody>
-                    {reservations.map((reservation) => {
+                    {filteredReservations.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-sm font-light text-[#9ca3af]">
+                          No reservations match the current filters.
+                        </td>
+                      </tr>
+                    )}
+                    {filteredReservations.map((reservation) => {
                       const isCheckedIn = reservation.checkInStatus === "checked-in";
                       return (
                         <tr
@@ -518,6 +751,7 @@ export default function ReservationsView({
                             />
                           </td>
                           <td className="py-4">
+                            <div className="flex items-center gap-1.5">
                             {isCheckedIn ? (
                               <motion.button
                                 type="button"
@@ -575,6 +809,15 @@ export default function ReservationsView({
                                 Check-In
                               </motion.button>
                             )}
+                            <button
+                              type="button"
+                              onClick={() => setEditingReservation(reservation)}
+                              className="cursor-pointer rounded-lg p-1.5 text-[#9ca3af] transition-colors hover:bg-white/5 hover:text-white"
+                              title="Edit reservation"
+                            >
+                              <PencilIcon />
+                            </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -611,6 +854,12 @@ export default function ReservationsView({
         reservation={assigningReservation}
         onClose={() => setAssigningReservation(null)}
         onAssigned={handleRoomAssigned}
+      />
+
+      <EditReservationModal
+        reservation={editingReservation}
+        onClose={() => setEditingReservation(null)}
+        onSaved={handleReservationSaved}
       />
     </div>
   );

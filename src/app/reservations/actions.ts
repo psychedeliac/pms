@@ -55,6 +55,29 @@ export async function updatePaymentStatus(
   return updateReservation(id, { payment_status: status });
 }
 
+export async function editReservation(
+  id: string,
+  input: {
+    guestName: string;
+    roomType: string;
+    roomNumber: string | null;
+    nights: number;
+    idStatus: IdStatus;
+    paymentStatus: PaymentStatus;
+    isVip: boolean;
+  }
+): Promise<{ error: string | null }> {
+  return updateReservation(id, {
+    guest_name: input.guestName,
+    room_type: input.roomType,
+    room_number: input.roomNumber,
+    nights: input.nights,
+    id_status: input.idStatus,
+    payment_status: input.paymentStatus,
+    is_vip: input.isVip,
+  });
+}
+
 export async function createWalkInBooking(input: {
   guestName: string;
   roomType: string;
