@@ -13,10 +13,10 @@ export default function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      whileHover={{ scale: 1.08 }}
-      whileTap={{ scale: 0.92 }}
-      transition={{ type: "spring", stiffness: 400, damping: 20 }}
-      className="flex size-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-border/5 bg-surface text-muted transition-colors hover:bg-surface-hover hover:text-ink"
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+      className="flex size-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-white/10 text-white/70 transition-colors hover:bg-white/15 hover:text-white"
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span

@@ -31,18 +31,13 @@ export default function LoginPage() {
           transition={{ delay: 0.1, duration: 0.4 }}
           className="mb-8 flex flex-col items-center gap-3"
         >
-          <div
-            className="flex size-11 items-center justify-center rounded-lg shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)]"
-            style={{
-              backgroundImage:
-                "linear-gradient(135deg, rgb(16, 185, 129) 0%, rgb(5, 150, 105) 100%)",
-            }}
-          >
+          <div className="flex size-11 items-center justify-center rounded-lg bg-ink shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.15),0px_4px_6px_-4px_rgba(0,0,0,0.15)]">
             <Image
               src="/reservations/icons/logo-mark.svg"
               alt=""
               width={18}
               height={18}
+              className="invert-0 dark:invert"
             />
           </div>
           <div className="text-center">
@@ -72,7 +67,7 @@ export default function LoginPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-[#10b981]"
+              className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/30"
               placeholder="you@hotel.com"
             />
           </div>
@@ -87,7 +82,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-[#10b981]"
+              className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/30"
               placeholder="••••••••"
             />
           </div>
@@ -97,7 +92,7 @@ export default function LoginPage() {
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            className="mt-2 cursor-pointer rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] py-2.5 text-sm font-normal text-white shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)]"
+            className="mt-2 cursor-pointer rounded-lg bg-ink py-2.5 text-sm font-normal text-background shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.15),0px_4px_6px_-4px_rgba(0,0,0,0.15)]"
           >
             Sign In
           </motion.button>
