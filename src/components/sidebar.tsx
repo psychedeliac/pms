@@ -18,7 +18,8 @@ import {
   Settings,
   type LucideIcon,
 } from "lucide-react";
-import { logout, type Session } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/client";
+import type { Profile } from "@/lib/profile";
 import ThemeToggle from "@/components/theme-toggle";
 
 const NAV_ITEMS: { label: string; icon: LucideIcon; href?: string }[] = [
@@ -52,7 +53,7 @@ const fadeProps = {
   transition: { duration: 0.15 },
 };
 
-export default function Sidebar({ session }: { session: Session }) {
+export default function Sidebar({ profile }: { profile: Profile }) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -69,8 +70,9 @@ export default function Sidebar({ session }: { session: Session }) {
     });
   }
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
     router.replace("/login");
   }
 
@@ -206,23 +208,17 @@ export default function Sidebar({ session }: { session: Session }) {
           }`}
         >
           <span className="relative shrink-0">
-            <span className="block size-10 overflow-hidden rounded-lg shadow-[0px_0px_0px_2px_rgba(255,255,255,0.15)]">
-              <Image
-                src={session.avatar}
-                alt=""
-                width={40}
-                height={40}
-                className="size-full object-cover"
-              />
+            <span className="flex size-10 items-center justify-center overflow-hidden rounded-lg bg-white/10 text-xs font-medium text-white shadow-[0px_0px_0px_2px_rgba(255,255,255,0.15)]">
+              {profile.initials}
             </span>
             <span className="absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-[#0a0a0a] bg-white" />
           </span>
           <AnimatePresence initial={false}>
             {!collapsed && (
               <motion.span key="account" {...fadeProps} className="flex-1 whitespace-nowrap text-left">
-                <p className="text-xs leading-4 text-white">{session.name}</p>
+                <p className="text-xs leading-4 text-white">{profile.name}</p>
                 <p className="text-[10px] leading-[15px] font-light text-white/45">
-                  {session.role}
+                  {profile.role}
                 </p>
               </motion.span>
             )}

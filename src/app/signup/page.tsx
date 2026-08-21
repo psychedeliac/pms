@@ -7,28 +7,44 @@ import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setPending(true);
     setError(null);
+    setInfo(null);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name, role: "Staff" },
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
+    });
+
+    setPending(false);
 
     if (error) {
-      setPending(false);
       setError(error.message);
       return;
     }
 
-    router.replace("/reservations");
+    if (data.session) {
+      router.replace("/reservations");
+      return;
+    }
+
+    setInfo("Check your email to confirm your account, then sign in.");
   }
 
   return (
@@ -72,6 +88,21 @@ export default function LoginPage() {
           transition={{ delay: 0.18, duration: 0.4 }}
         >
           <div className="flex flex-col gap-1.5">
+            <label htmlFor="name" className="text-xs font-light text-muted">
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/30"
+              placeholder="Ana Rodriguez"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
             <label htmlFor="email" className="text-xs font-light text-muted">
               Email
             </label>
@@ -93,7 +124,7 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="rounded-lg border border-border/5 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-ink/30"
@@ -106,23 +137,28 @@ export default function LoginPage() {
               {error}
             </p>
           )}
+          {info && (
+            <p className="rounded-lg border border-border/20 px-3 py-2 text-xs font-normal text-ink">
+              {info}
+            </p>
+          )}
 
           <motion.button
             type="submit"
             disabled={pending}
-            whileHover={{ scale: 1.015 }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
             className="mt-2 cursor-pointer rounded-lg bg-ink py-2.5 text-sm font-normal text-background shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.15),0px_4px_6px_-4px_rgba(0,0,0,0.15)] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {pending ? "Signing in..." : "Sign In"}
+            {pending ? "Signing up..." : "Sign Up"}
           </motion.button>
         </motion.form>
 
         <p className="mt-6 text-center text-[11px] font-light text-muted">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-ink hover:underline">
-            Sign up
+          Already have an account?{" "}
+          <Link href="/login" className="text-ink hover:underline">
+            Sign in
           </Link>
         </p>
       </motion.div>
