@@ -7,11 +7,10 @@ export type Session = {
 
 const SESSION_KEY = "pms_session";
 
-// No backend yet — this is a single hardcoded demo account so the login
-// form has something real to validate against until Supabase Auth lands.
+// No backend yet — signing in always logs in as this fixed demo account
+// until Supabase Auth lands.
 const DEMO_USER = {
   email: "ana@concierge.com",
-  password: "concierge123",
   name: "Ana Rodriguez",
   role: "Front Desk Manager",
   avatar: "/reservations/avatars/ana-rodriguez.png",
@@ -28,14 +27,7 @@ export function getSession(): Session | null {
   }
 }
 
-export function login(email: string, password: string): Session {
-  if (
-    email.trim().toLowerCase() !== DEMO_USER.email ||
-    password !== DEMO_USER.password
-  ) {
-    throw new Error("Invalid email or password.");
-  }
-
+export function login(): Session {
   const session: Session = {
     email: DEMO_USER.email,
     name: DEMO_USER.name,

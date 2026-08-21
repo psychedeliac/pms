@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { logout, type Session } from "@/lib/auth";
 
 const NAV_ITEMS = [
@@ -79,15 +80,19 @@ export default function Sidebar({ session }: { session: Session }) {
               </>
             );
 
-            const className = `flex w-full items-center rounded-lg border p-[13px] ${
+            const className = `flex w-full items-center rounded-lg border p-[13px] transition-colors duration-200 ${
               isActive
                 ? "border-[rgba(16,185,129,0.2)] bg-gradient-to-r from-[rgba(16,185,129,0.2)] to-[rgba(16,185,129,0.05)]"
-                : "border-transparent"
+                : "border-transparent hover:bg-white/5"
             }`;
 
             if (item.href) {
               return (
-                <Link key={item.label} href={item.href} className={className}>
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`${className} cursor-pointer`}
+                >
                   {content}
                 </Link>
               );
@@ -103,10 +108,13 @@ export default function Sidebar({ session }: { session: Session }) {
       </div>
 
       <div className="border-t border-white/5 pt-[21px]">
-        <button
+        <motion.button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center gap-[10px] rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-3 backdrop-blur-[10px] transition-colors hover:bg-[rgba(26,26,26,0.9)]"
+          whileHover={{ scale: 1.015 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 22 }}
+          className="flex w-full cursor-pointer items-center gap-[10px] rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-3 backdrop-blur-[10px] transition-colors hover:bg-[rgba(26,26,26,0.9)]"
         >
           <span className="relative shrink-0">
             <span className="block size-10 overflow-hidden rounded-lg shadow-[0px_0px_0px_2px_rgba(16,185,129,0.2)]">
@@ -132,7 +140,7 @@ export default function Sidebar({ session }: { session: Session }) {
             width={12}
             height={12}
           />
-        </button>
+        </motion.button>
       </div>
     </aside>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { AnimatePresence, motion } from "motion/react";
 import RequireAuth from "@/components/require-auth";
 import Sidebar from "@/components/sidebar";
 import type { Session } from "@/lib/auth";
@@ -130,9 +131,12 @@ function ReservationsView({ session }: { session: Session }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
+            <motion.button
               type="button"
-              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] px-4 py-2 text-xs text-white shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)]"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className="flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] px-4 py-2 text-xs text-white shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)]"
             >
               <Image
                 src="/reservations/icons/icon-plus.svg"
@@ -141,7 +145,7 @@ function ReservationsView({ session }: { session: Session }) {
                 height={12}
               />
               Walk-in Booking
-            </button>
+            </motion.button>
 
             <div className="relative">
               <Image
@@ -154,13 +158,16 @@ function ReservationsView({ session }: { session: Session }) {
               <input
                 type="text"
                 placeholder="Search guests, rooms..."
-                className="w-64 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] py-2.5 pl-10 pr-4 text-xs text-white outline-none placeholder:text-[#9ca3af] backdrop-blur-[10px]"
+                className="w-64 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] py-2.5 pl-10 pr-4 text-xs text-white outline-none transition-colors placeholder:text-[#9ca3af] backdrop-blur-[10px] focus:border-[#10b981]"
               />
             </div>
 
-            <button
+            <motion.button
               type="button"
-              className="relative flex items-center justify-center rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] p-3 backdrop-blur-[10px]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.94 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className="relative flex cursor-pointer items-center justify-center rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] p-3 backdrop-blur-[10px] transition-colors hover:bg-[rgba(26,26,26,0.9)]"
             >
               <Image
                 src="/reservations/icons/icon-bell.svg"
@@ -169,7 +176,7 @@ function ReservationsView({ session }: { session: Session }) {
                 height={14}
               />
               <span className="absolute right-1 top-1 size-2 rounded-full bg-[#10b981] shadow-[0px_0px_0px_2px_#1a1a1a]" />
-            </button>
+            </motion.button>
           </div>
         </header>
 
@@ -181,25 +188,41 @@ function ReservationsView({ session }: { session: Session }) {
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 border-b-2 px-1 pb-3.5 text-sm first:pl-0 [&:not(:first-child)]:ml-6 ${
-                  isActive
-                    ? "border-[#10b981] text-white"
-                    : "border-transparent font-light text-[#9ca3af]"
+                className={`relative flex cursor-pointer items-center gap-2 px-1 pb-3.5 text-sm transition-colors first:pl-0 [&:not(:first-child)]:ml-6 ${
+                  isActive ? "text-white" : "font-light text-[#9ca3af] hover:text-white"
                 }`}
               >
                 <Image src={tab.icon} alt="" width={14} height={14} />
                 {tab.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="active-tab-indicator"
+                    className="absolute inset-x-0 -bottom-px h-0.5 bg-[#10b981]"
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
               </button>
             );
           })}
         </nav>
 
+        <AnimatePresence mode="wait">
         {activeTab === "check-in" ? (
-          <div className="flex w-full flex-col gap-6">
+          <motion.div
+            key="check-in"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="flex w-full flex-col gap-6"
+          >
             <div className="flex w-full gap-4">
-              {STAT_CARDS.map((card) => (
-                <div
+              {STAT_CARDS.map((card, index) => (
+                <motion.div
                   key={card.label}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="flex flex-1 flex-col gap-1 rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-[17px] backdrop-blur-[10px]"
                 >
                   <div className="flex items-start justify-between">
@@ -215,7 +238,7 @@ function ReservationsView({ session }: { session: Session }) {
                   </div>
                   <p className="pt-1 text-sm text-white">{card.label}</p>
                   <p className="text-xs font-light text-[#9ca3af]">{card.hint}</p>
-                </div>
+                </motion.div>
               ))}
             </div>
 
@@ -233,9 +256,12 @@ function ReservationsView({ session }: { session: Session }) {
                   </h2>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
+                  <motion.button
                     type="button"
-                    className="flex items-center gap-1 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-3.5 py-1.5 text-xs text-[#9ca3af] backdrop-blur-[10px]"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="flex cursor-pointer items-center gap-1 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-3.5 py-1.5 text-xs text-[#9ca3af] backdrop-blur-[10px] transition-colors hover:bg-[rgba(26,26,26,0.9)] hover:text-white"
                   >
                     <Image
                       src="/reservations/icons/icon-filter.svg"
@@ -244,10 +270,13 @@ function ReservationsView({ session }: { session: Session }) {
                       height={12}
                     />
                     Filter
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
-                    className="flex items-center gap-1 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-3.5 py-1.5 text-xs text-[#9ca3af] backdrop-blur-[10px]"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="flex cursor-pointer items-center gap-1 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-3.5 py-1.5 text-xs text-[#9ca3af] backdrop-blur-[10px] transition-colors hover:bg-[rgba(26,26,26,0.9)] hover:text-white"
                   >
                     <Image
                       src="/reservations/icons/icon-export.svg"
@@ -256,7 +285,7 @@ function ReservationsView({ session }: { session: Session }) {
                       height={12}
                     />
                     Export
-                  </button>
+                  </motion.button>
                 </div>
               </div>
 
@@ -288,7 +317,7 @@ function ReservationsView({ session }: { session: Session }) {
                       return (
                         <tr
                           key={reservation.id}
-                          className={`border-b border-white/5 ${
+                          className={`border-b border-white/5 transition-colors hover:bg-white/[0.03] ${
                             isCheckedIn ? "bg-[rgba(20,83,45,0.1)]" : ""
                           }`}
                         >
@@ -371,9 +400,12 @@ function ReservationsView({ session }: { session: Session }) {
                                 Checked-In
                               </span>
                             ) : reservation.roomNumber === null ? (
-                              <button
+                              <motion.button
                                 type="button"
-                                className="flex items-center gap-1 rounded-lg bg-[rgba(168,85,247,0.2)] px-3 py-1.5 text-xs text-[#c084fc]"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                                className="flex cursor-pointer items-center gap-1 rounded-lg bg-[rgba(168,85,247,0.2)] px-3 py-1.5 text-xs text-[#c084fc] transition-colors hover:bg-[rgba(168,85,247,0.3)]"
                               >
                                 <Image
                                   src="/reservations/icons/action-assign-room.svg"
@@ -382,12 +414,15 @@ function ReservationsView({ session }: { session: Session }) {
                                   height={12}
                                 />
                                 Assign Room
-                              </button>
+                              </motion.button>
                             ) : (
-                              <button
+                              <motion.button
                                 type="button"
                                 onClick={() => handleCheckIn(reservation.id)}
-                                className="flex items-center gap-1 rounded-lg bg-[rgba(16,185,129,0.2)] px-3 py-1.5 text-xs text-[#10b981]"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                                className="flex cursor-pointer items-center gap-1 rounded-lg bg-[rgba(16,185,129,0.2)] px-3 py-1.5 text-xs text-[#10b981] transition-colors hover:bg-[rgba(16,185,129,0.3)]"
                               >
                                 <Image
                                   src="/reservations/icons/action-checkin.svg"
@@ -396,7 +431,7 @@ function ReservationsView({ session }: { session: Session }) {
                                   height={12}
                                 />
                                 Check-In
-                              </button>
+                              </motion.button>
                             )}
                           </td>
                         </tr>
@@ -406,14 +441,22 @@ function ReservationsView({ session }: { session: Session }) {
                 </table>
               </div>
             </section>
-          </div>
+          </motion.div>
         ) : (
-          <div className="flex w-full flex-1 items-center justify-center rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-12 backdrop-blur-[10px]">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="flex w-full flex-1 items-center justify-center rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-12 backdrop-blur-[10px]"
+          >
             <p className="text-sm font-light text-[#9ca3af]">
               {TABS.find((t) => t.key === activeTab)?.label} view coming soon.
             </p>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </main>
     </div>
   );

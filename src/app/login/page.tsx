@@ -3,22 +3,18 @@
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { login } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    try {
-      login(email, password);
-      router.replace("/reservations");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    }
+    login();
+    router.replace("/reservations");
   }
 
   return (
@@ -29,8 +25,18 @@ export default function LoginPage() {
           "linear-gradient(135deg, rgb(10, 10, 10) 0%, rgb(13, 13, 13) 100%)",
       }}
     >
-      <div className="w-full max-w-sm rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-8 backdrop-blur-[10px]">
-        <div className="mb-8 flex flex-col items-center gap-3">
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-sm rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-8 backdrop-blur-[10px]"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.4 }}
+          className="mb-8 flex flex-col items-center gap-3"
+        >
           <div
             className="flex size-11 items-center justify-center rounded-lg shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)]"
             style={{
@@ -53,9 +59,15 @@ export default function LoginPage() {
               Hotel Management
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <motion.form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18, duration: 0.4 }}
+        >
           <div className="flex flex-col gap-1.5">
             <label htmlFor="email" className="text-xs font-light text-[#9ca3af]">
               Email
@@ -63,11 +75,10 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
-              required
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none placeholder:text-[#9ca3af] focus:border-[#10b981]"
+              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
               placeholder="you@hotel.com"
             />
           </div>
@@ -79,29 +90,29 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              required
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none placeholder:text-[#9ca3af] focus:border-[#10b981]"
+              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
               placeholder="••••••••"
             />
           </div>
 
-          {error && <p className="text-xs text-[#f87171]">{error}</p>}
-
-          <button
+          <motion.button
             type="submit"
-            className="mt-2 rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] py-2.5 text-sm font-normal text-white shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)] transition-opacity hover:opacity-90"
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="mt-2 cursor-pointer rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] py-2.5 text-sm font-normal text-white shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)]"
           >
             Sign In
-          </button>
-        </form>
+          </motion.button>
+        </motion.form>
 
         <p className="mt-6 text-center text-[11px] font-light text-[#9ca3af]">
-          Demo credentials: ana@concierge.com / concierge123
+          Demo mode — just click Sign In to continue.
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }
