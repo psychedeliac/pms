@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { createWalkInBooking } from "@/app/reservations/actions";
 import type { PaymentStatus, Reservation } from "@/lib/reservations";
+import { isoToTimeInput, timeInputToIsoToday } from "@/lib/reservation-time";
 
 export default function WalkInBookingModal({
   open,
@@ -18,6 +19,7 @@ export default function WalkInBookingModal({
   const [roomType, setRoomType] = useState("");
   const [roomNumber, setRoomNumber] = useState("");
   const [nights, setNights] = useState(1);
+  const [arrivalTime, setArrivalTime] = useState(() => isoToTimeInput(new Date().toISOString()));
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("pending");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +29,7 @@ export default function WalkInBookingModal({
     setRoomType("");
     setRoomNumber("");
     setNights(1);
+    setArrivalTime(isoToTimeInput(new Date().toISOString()));
     setPaymentStatus("pending");
     setError(null);
   }
@@ -42,6 +45,7 @@ export default function WalkInBookingModal({
       roomNumber: roomNumber.trim() === "" ? null : roomNumber,
       nights,
       paymentStatus,
+      arrivalAt: timeInputToIsoToday(arrivalTime),
     });
 
     setPending(false);
@@ -107,18 +111,32 @@ export default function WalkInBookingModal({
                 />
               </div>
 
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="roomNumber" className="text-xs font-light text-[#9ca3af]">
+                  Room Number
+                </label>
+                <input
+                  id="roomNumber"
+                  type="text"
+                  value={roomNumber}
+                  onChange={(e) => setRoomNumber(e.target.value)}
+                  className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
+                  placeholder="Unassigned"
+                />
+              </div>
+
               <div className="flex gap-3">
                 <div className="flex flex-1 flex-col gap-1.5">
-                  <label htmlFor="roomNumber" className="text-xs font-light text-[#9ca3af]">
-                    Room Number
+                  <label htmlFor="arrivalTime" className="text-xs font-light text-[#9ca3af]">
+                    Arrival Time
                   </label>
                   <input
-                    id="roomNumber"
-                    type="text"
-                    value={roomNumber}
-                    onChange={(e) => setRoomNumber(e.target.value)}
-                    className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
-                    placeholder="Unassigned"
+                    id="arrivalTime"
+                    type="time"
+                    required
+                    value={arrivalTime}
+                    onChange={(e) => setArrivalTime(e.target.value)}
+                    className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#10b981]"
                   />
                 </div>
 

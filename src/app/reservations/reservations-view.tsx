@@ -397,7 +397,15 @@ export default function ReservationsView({
     id: string,
     patch: Pick<
       Reservation,
-      "guestName" | "roomType" | "roomNumber" | "nights" | "idStatus" | "paymentStatus" | "isVip"
+      | "guestName"
+      | "roomType"
+      | "roomNumber"
+      | "nights"
+      | "idStatus"
+      | "paymentStatus"
+      | "isVip"
+      | "arrivalAt"
+      | "arrivalTime"
     >
   ) {
     setReservations((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));

@@ -65,6 +65,7 @@ export async function editReservation(
     idStatus: IdStatus;
     paymentStatus: PaymentStatus;
     isVip: boolean;
+    arrivalAt: string;
   }
 ): Promise<{ error: string | null }> {
   return updateReservation(id, {
@@ -75,6 +76,7 @@ export async function editReservation(
     id_status: input.idStatus,
     payment_status: input.paymentStatus,
     is_vip: input.isVip,
+    arrival_at: input.arrivalAt,
   });
 }
 
@@ -84,6 +86,7 @@ export async function createWalkInBooking(input: {
   roomNumber: string | null;
   nights: number;
   paymentStatus: PaymentStatus;
+  arrivalAt: string;
 }): Promise<{ error: string | null; reservation: Reservation | null }> {
   const supabase = await createClient();
   const {
@@ -99,6 +102,7 @@ export async function createWalkInBooking(input: {
       room_number: input.roomNumber,
       nights: input.nights,
       payment_status: input.paymentStatus,
+      arrival_at: input.arrivalAt,
     })
     .select()
     .single();

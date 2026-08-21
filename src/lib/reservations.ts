@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { formatArrivalTime } from "@/lib/reservation-time";
 
 export type IdStatus = "verified" | "pending";
 export type PaymentStatus = "paid" | "pending";
@@ -43,10 +44,7 @@ export function toReservation(row: ReservationRow): Reservation {
     avatar: row.avatar_url,
     roomType: row.room_type,
     roomNumber: row.room_number,
-    arrivalTime: new Date(row.arrival_at).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    }),
+    arrivalTime: formatArrivalTime(row.arrival_at),
     arrivalAt: row.arrival_at,
     nights: row.nights,
     idStatus: row.id_status,

@@ -4,10 +4,19 @@ import { useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { editReservation } from "@/app/reservations/actions";
 import type { IdStatus, PaymentStatus, Reservation } from "@/lib/reservations";
+import { formatArrivalTime, isoToTimeInput, timeInputToIsoToday } from "@/lib/reservation-time";
 
 type ReservationPatch = Pick<
   Reservation,
-  "guestName" | "roomType" | "roomNumber" | "nights" | "idStatus" | "paymentStatus" | "isVip"
+  | "guestName"
+  | "roomType"
+  | "roomNumber"
+  | "nights"
+  | "idStatus"
+  | "paymentStatus"
+  | "isVip"
+  | "arrivalAt"
+  | "arrivalTime"
 >;
 
 function EditReservationForm({
@@ -23,6 +32,7 @@ function EditReservationForm({
   const [roomType, setRoomType] = useState(reservation.roomType);
   const [roomNumber, setRoomNumber] = useState(reservation.roomNumber ?? "");
   const [nights, setNights] = useState(reservation.nights);
+  const [arrivalTime, setArrivalTime] = useState(() => isoToTimeInput(reservation.arrivalAt));
   const [idStatus, setIdStatus] = useState<IdStatus>(reservation.idStatus);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(reservation.paymentStatus);
   const [isVip, setIsVip] = useState(reservation.isVip);
@@ -34,6 +44,7 @@ function EditReservationForm({
     setPending(true);
     setError(null);
 
+    const arrivalAt = timeInputToIsoToday(arrivalTime);
     const patch: ReservationPatch = {
       guestName,
       roomType,
@@ -42,6 +53,8 @@ function EditReservationForm({
       idStatus,
       paymentStatus,
       isVip,
+      arrivalAt,
+      arrivalTime: formatArrivalTime(arrivalAt),
     };
 
     const { error } = await editReservation(reservation.id, patch);
@@ -95,18 +108,32 @@ function EditReservationForm({
           />
         </div>
 
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="editRoomNumber" className="text-xs font-light text-[#9ca3af]">
+            Room Number
+          </label>
+          <input
+            id="editRoomNumber"
+            type="text"
+            value={roomNumber}
+            onChange={(e) => setRoomNumber(e.target.value)}
+            className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
+            placeholder="Unassigned"
+          />
+        </div>
+
         <div className="flex gap-3">
           <div className="flex flex-1 flex-col gap-1.5">
-            <label htmlFor="editRoomNumber" className="text-xs font-light text-[#9ca3af]">
-              Room Number
+            <label htmlFor="editArrivalTime" className="text-xs font-light text-[#9ca3af]">
+              Arrival Time
             </label>
             <input
-              id="editRoomNumber"
-              type="text"
-              value={roomNumber}
-              onChange={(e) => setRoomNumber(e.target.value)}
-              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
-              placeholder="Unassigned"
+              id="editArrivalTime"
+              type="time"
+              required
+              value={arrivalTime}
+              onChange={(e) => setArrivalTime(e.target.value)}
+              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[#10b981]"
             />
           </div>
 
