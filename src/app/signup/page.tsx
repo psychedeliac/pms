@@ -7,28 +7,44 @@ import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setPending(true);
     setError(null);
+    setInfo(null);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name, role: "Staff" },
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
+    });
+
+    setPending(false);
 
     if (error) {
-      setPending(false);
       setError(error.message);
       return;
     }
 
-    router.replace("/reservations");
+    if (data.session) {
+      router.replace("/reservations");
+      return;
+    }
+
+    setInfo("Check your email to confirm your account, then sign in.");
   }
 
   return (
@@ -83,6 +99,21 @@ export default function LoginPage() {
           transition={{ delay: 0.18, duration: 0.4 }}
         >
           <div className="flex flex-col gap-1.5">
+            <label htmlFor="name" className="text-xs font-light text-[#9ca3af]">
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
+              placeholder="Ana Rodriguez"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
             <label htmlFor="email" className="text-xs font-light text-[#9ca3af]">
               Email
             </label>
@@ -104,7 +135,7 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#9ca3af] focus:border-[#10b981]"
@@ -115,6 +146,9 @@ export default function LoginPage() {
           {error && (
             <p className="text-xs font-light text-[#f87171]">{error}</p>
           )}
+          {info && (
+            <p className="text-xs font-light text-[#10b981]">{info}</p>
+          )}
 
           <motion.button
             type="submit"
@@ -124,14 +158,14 @@ export default function LoginPage() {
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
             className="mt-2 cursor-pointer rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] py-2.5 text-sm font-normal text-white shadow-[0px_10px_15px_-3px_rgba(16,185,129,0.2),0px_4px_6px_-4px_rgba(16,185,129,0.2)] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {pending ? "Signing in..." : "Sign In"}
+            {pending ? "Signing up..." : "Sign Up"}
           </motion.button>
         </motion.form>
 
         <p className="mt-6 text-center text-[11px] font-light text-[#9ca3af]">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-[#10b981] hover:underline">
-            Sign up
+          Already have an account?{" "}
+          <Link href="/login" className="text-[#10b981] hover:underline">
+            Sign in
           </Link>
         </p>
       </motion.div>

@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { logout, type Session } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/client";
+import type { Profile } from "@/lib/profile";
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: "/reservations/icons/nav-dashboard.svg" },
@@ -23,11 +24,12 @@ const NAV_ITEMS = [
 
 const ACTIVE_LABEL = "Reservations";
 
-export default function Sidebar({ session }: { session: Session }) {
+export default function Sidebar({ profile }: { profile: Profile }) {
   const router = useRouter();
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
     router.replace("/login");
   }
 
@@ -117,21 +119,21 @@ export default function Sidebar({ session }: { session: Session }) {
           className="flex w-full cursor-pointer items-center gap-[10px] rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-3 backdrop-blur-[10px] transition-colors hover:bg-[rgba(26,26,26,0.9)]"
         >
           <span className="relative shrink-0">
-            <span className="block size-10 overflow-hidden rounded-lg shadow-[0px_0px_0px_2px_rgba(16,185,129,0.2)]">
-              <Image
-                src={session.avatar}
-                alt=""
-                width={40}
-                height={40}
-                className="size-full object-cover"
-              />
+            <span
+              className="flex size-10 items-center justify-center overflow-hidden rounded-lg text-xs font-medium text-white shadow-[0px_0px_0px_2px_rgba(16,185,129,0.2)]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(135deg, rgb(16, 185, 129) 0%, rgb(5, 150, 105) 100%)",
+              }}
+            >
+              {profile.initials}
             </span>
             <span className="absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-[#1a1a1a] bg-[#10b981]" />
           </span>
           <span className="flex-1 text-left">
-            <p className="text-xs leading-4 text-white">{session.name}</p>
+            <p className="text-xs leading-4 text-white">{profile.name}</p>
             <p className="text-[10px] leading-[15px] font-light text-[#9ca3af]">
-              {session.role}
+              {profile.role}
             </p>
           </span>
           <Image
