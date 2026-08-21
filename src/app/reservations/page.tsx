@@ -110,22 +110,16 @@ function ReservationsView({ session }: { session: Session }) {
   });
 
   return (
-    <div
-      className="flex min-h-screen w-full"
-      style={{
-        backgroundImage:
-          "linear-gradient(135deg, rgb(10, 10, 10) 0%, rgb(13, 13, 13) 100%)",
-      }}
-    >
+    <div className="flex min-h-screen w-full bg-page-gradient">
       <Sidebar session={session} />
 
       <main className="flex w-full flex-1 flex-col gap-6 overflow-auto p-6">
         <header className="flex w-full items-center justify-between">
           <div>
-            <h1 className="text-xl font-medium tracking-[-0.5px] text-white">
+            <h1 className="text-xl font-medium tracking-[-0.5px] text-ink">
               Reservations
             </h1>
-            <p className="text-xs font-light text-[#9ca3af]">
+            <p className="text-xs font-light text-muted">
               {today} • Manage guest bookings, arrivals & room assignments
             </p>
           </div>
@@ -158,7 +152,7 @@ function ReservationsView({ session }: { session: Session }) {
               <input
                 type="text"
                 placeholder="Search guests, rooms..."
-                className="w-64 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] py-2.5 pl-10 pr-4 text-xs text-white outline-none transition-colors placeholder:text-[#9ca3af] backdrop-blur-[10px] focus:border-[#10b981]"
+                className="w-64 rounded-lg border border-border/5 bg-surface py-2.5 pl-10 pr-4 text-xs text-ink outline-none transition-colors placeholder:text-muted backdrop-blur-[10px] focus:border-[#10b981]"
               />
             </div>
 
@@ -167,7 +161,7 @@ function ReservationsView({ session }: { session: Session }) {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.94 }}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              className="relative flex cursor-pointer items-center justify-center rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] p-3 backdrop-blur-[10px] transition-colors hover:bg-[rgba(26,26,26,0.9)]"
+              className="relative flex cursor-pointer items-center justify-center rounded-lg border border-border/5 bg-surface p-3 backdrop-blur-[10px] transition-colors hover:bg-surface-hover"
             >
               <Image
                 src="/reservations/icons/icon-bell.svg"
@@ -180,7 +174,7 @@ function ReservationsView({ session }: { session: Session }) {
           </div>
         </header>
 
-        <nav className="flex w-full items-start border-b border-white/10 pb-px">
+        <nav className="flex w-full items-start border-b border-border/10 pb-px">
           {TABS.map((tab) => {
             const isActive = tab.key === activeTab;
             return (
@@ -189,7 +183,7 @@ function ReservationsView({ session }: { session: Session }) {
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative flex cursor-pointer items-center gap-2 px-1 pb-3.5 text-sm transition-colors first:pl-0 [&:not(:first-child)]:ml-6 ${
-                  isActive ? "text-white" : "font-light text-[#9ca3af] hover:text-white"
+                  isActive ? "text-ink" : "font-light text-muted hover:text-ink"
                 }`}
               >
                 <Image src={tab.icon} alt="" width={14} height={14} />
@@ -223,7 +217,7 @@ function ReservationsView({ session }: { session: Session }) {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="flex flex-1 flex-col gap-1 rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-[17px] backdrop-blur-[10px]"
+                  className="flex flex-1 flex-col gap-1 rounded-xl border border-border/5 bg-surface p-[17px] backdrop-blur-[10px]"
                 >
                   <div className="flex items-start justify-between">
                     <span
@@ -232,17 +226,17 @@ function ReservationsView({ session }: { session: Session }) {
                     >
                       <Image src={card.icon} alt="" width={16} height={16} />
                     </span>
-                    <span className="text-2xl font-semibold text-white">
+                    <span className="text-2xl font-semibold text-ink">
                       {card.value}
                     </span>
                   </div>
-                  <p className="pt-1 text-sm text-white">{card.label}</p>
-                  <p className="text-xs font-light text-[#9ca3af]">{card.hint}</p>
+                  <p className="pt-1 text-sm text-ink">{card.label}</p>
+                  <p className="text-xs font-light text-muted">{card.hint}</p>
                 </motion.div>
               ))}
             </div>
 
-            <section className="flex w-full flex-col gap-4 rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-[21px] backdrop-blur-[10px]">
+            <section className="flex w-full flex-col gap-4 rounded-xl border border-border/5 bg-surface p-[21px] backdrop-blur-[10px]">
               <div className="flex w-full items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Image
@@ -251,7 +245,7 @@ function ReservationsView({ session }: { session: Session }) {
                     width={20}
                     height={16}
                   />
-                  <h2 className="text-base font-medium text-white">
+                  <h2 className="text-base font-medium text-ink">
                     Guest Arrivals Today
                   </h2>
                 </div>
@@ -261,7 +255,7 @@ function ReservationsView({ session }: { session: Session }) {
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    className="flex cursor-pointer items-center gap-1 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-3.5 py-1.5 text-xs text-[#9ca3af] backdrop-blur-[10px] transition-colors hover:bg-[rgba(26,26,26,0.9)] hover:text-white"
+                    className="flex cursor-pointer items-center gap-1 rounded-lg border border-border/5 bg-surface px-3.5 py-1.5 text-xs text-muted backdrop-blur-[10px] transition-colors hover:bg-surface-hover hover:text-ink"
                   >
                     <Image
                       src="/reservations/icons/icon-filter.svg"
@@ -276,7 +270,7 @@ function ReservationsView({ session }: { session: Session }) {
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    className="flex cursor-pointer items-center gap-1 rounded-lg border border-white/5 bg-[rgba(26,26,26,0.6)] px-3.5 py-1.5 text-xs text-[#9ca3af] backdrop-blur-[10px] transition-colors hover:bg-[rgba(26,26,26,0.9)] hover:text-white"
+                    className="flex cursor-pointer items-center gap-1 rounded-lg border border-border/5 bg-surface px-3.5 py-1.5 text-xs text-muted backdrop-blur-[10px] transition-colors hover:bg-surface-hover hover:text-ink"
                   >
                     <Image
                       src="/reservations/icons/icon-export.svg"
@@ -292,7 +286,7 @@ function ReservationsView({ session }: { session: Session }) {
               <div className="w-full overflow-auto">
                 <table className="w-full min-w-[900px] border-collapse">
                   <thead>
-                    <tr className="border-b border-white/10">
+                    <tr className="border-b border-border/10">
                       {[
                         "Guest Name",
                         "Room Type",
@@ -304,7 +298,7 @@ function ReservationsView({ session }: { session: Session }) {
                       ].map((heading) => (
                         <th
                           key={heading}
-                          className="pb-3 text-left text-xs font-light uppercase text-[#9ca3af]"
+                          className="pb-3 text-left text-xs font-light uppercase text-muted"
                         >
                           {heading}
                         </th>
@@ -317,7 +311,7 @@ function ReservationsView({ session }: { session: Session }) {
                       return (
                         <tr
                           key={reservation.id}
-                          className={`border-b border-white/5 transition-colors hover:bg-white/[0.03] ${
+                          className={`border-b border-border/5 transition-colors hover:bg-border/[0.03] ${
                             isCheckedIn ? "bg-[rgba(20,83,45,0.1)]" : ""
                           }`}
                         >
@@ -333,25 +327,25 @@ function ReservationsView({ session }: { session: Session }) {
                                 />
                               </span>
                               <div>
-                                <p className="text-sm text-white">
+                                <p className="text-sm text-ink">
                                   {reservation.guestName}
                                 </p>
-                                <p className="text-xs text-[#9ca3af]">
+                                <p className="text-xs text-muted">
                                   Booking {reservation.bookingNumber}
                                 </p>
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 text-sm font-light text-[#9ca3af]">
+                          <td className="py-4 text-sm font-light text-muted">
                             {reservation.roomType}
                             {reservation.roomNumber
                               ? ` - ${reservation.roomNumber}`
                               : " - Unassigned"}
                           </td>
-                          <td className="py-4 text-sm font-light text-[#9ca3af]">
+                          <td className="py-4 text-sm font-light text-muted">
                             {reservation.arrivalTime}
                           </td>
-                          <td className="py-4 text-sm font-light text-[#9ca3af]">
+                          <td className="py-4 text-sm font-light text-muted">
                             {reservation.nights} nights
                           </td>
                           <td className="py-4">
@@ -449,9 +443,9 @@ function ReservationsView({ session }: { session: Session }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="flex w-full flex-1 items-center justify-center rounded-xl border border-white/5 bg-[rgba(26,26,26,0.6)] p-12 backdrop-blur-[10px]"
+            className="flex w-full flex-1 items-center justify-center rounded-xl border border-border/5 bg-surface p-12 backdrop-blur-[10px]"
           >
-            <p className="text-sm font-light text-[#9ca3af]">
+            <p className="text-sm font-light text-muted">
               {TABS.find((t) => t.key === activeTab)?.label} view coming soon.
             </p>
           </motion.div>
